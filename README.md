@@ -1,4 +1,6 @@
 write-file-auto
 
 #Usage
-write-file-auto -input=my-script.txt -output=main.js
+main -input=my-script.txt -output=main.js
+
+![](gif-write.gif)

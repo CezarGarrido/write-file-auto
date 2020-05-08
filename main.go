@@ -37,25 +37,25 @@ func main() {
 func writeLines(inputPath, outputPath string, sleep time.Duration) {
 	file, err := os.Open(inputPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer file.Close()
 	fileOutput, err := os.Create(outputPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer fileOutput.Close()
 	r := bufio.NewReader(file)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	work := func(r *bufio.Reader, fileOutput *os.File) {
+	work := func() {
 		bytes, err := r.ReadBytes('\n')
 		if err == io.EOF {
 			writeLineByLine(string(bytes), fileOutput, sleep)
 			os.Exit(0)
 		} else if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
 		writeLineByLine(string(bytes), fileOutput, sleep)
 	}
@@ -76,9 +76,8 @@ func writeLines(inputPath, outputPath string, sleep time.Duration) {
 				}
 			default:
 				if status == "PLAY" {
-					work(r, fileOutput)
+					work()
 				}
-
 			}
 		}
 	}(command, &wg)
@@ -88,19 +87,15 @@ func writeLines(inputPath, outputPath string, sleep time.Duration) {
 }
 
 func writeLineByLine(line string, fileOutput *os.File, sleep time.Duration) {
-	w := bufio.NewWriter(fileOutput)
 	for _, strLine := range line {
-		time.Sleep(sleep)
-		if _, err := w.WriteString(string(strLine)); err != nil {
-			panic(err)
-		}
-		if err := w.Flush(); err != nil {
-			panic(err)
+		if _, err := fileOutput.WriteString(string(strLine)); err != nil {
+			log.Fatalln(err)
 		}
 		err := fileOutput.Sync()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
 		}
+		time.Sleep(sleep)
 	}
 }
 
